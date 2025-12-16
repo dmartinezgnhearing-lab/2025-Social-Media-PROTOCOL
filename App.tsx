@@ -282,8 +282,7 @@ function App() {
                   <select
                     className="px-3 py-2 border rounded-lg"
                     value={newRec.brandId}
-                    // @ts-ignore
-                    onChange={e => setNewRec({...newRec, brandId: e.target.value})}
+                    onChange={e => setNewRec({...newRec, brandId: e.target.value as BrandId})}
                   >
                     <option value="resound">ReSound</option>
                     <option value="beltone">Beltone</option>
@@ -297,8 +296,7 @@ function App() {
                   <select
                     className="px-3 py-2 border rounded-lg"
                     value={newRec.countryId}
-                    // @ts-ignore
-                    onChange={e => setNewRec({...newRec, countryId: e.target.value})}
+                    onChange={e => setNewRec({...newRec, countryId: e.target.value as CountryId | 'general'})}
                   >
                     <option value="general">{t.global}</option>
                     <option value="es">{t.spain}</option>
@@ -333,8 +331,7 @@ function App() {
                   <select
                     className="w-full px-3 py-2 border rounded-lg"
                     value={newRec.priority}
-                    // @ts-ignore
-                    onChange={e => setNewRec({...newRec, priority: e.target.value})}
+                    onChange={e => setNewRec({...newRec, priority: e.target.value as 'high' | 'medium' | 'low'})}
                   >
                     <option value="high">{t.high}</option>
                     <option value="medium">{t.medium}</option>

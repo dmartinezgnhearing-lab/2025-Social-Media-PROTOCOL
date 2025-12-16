@@ -14,7 +14,7 @@ const BrandSection = ({ brandId, state, t }: { brandId: BrandId, state: AppState
   if (!brandConfig) return null;
   
   // Aggregate data for this brand across all countries
-  const countries = [
+  const countries: { id: keyof AppState['data']; name: string }[] = [
     { id: 'es', name: t.spain },
     { id: 'br', name: t.brazil },
     { id: 'it', name: t.italy }
@@ -31,7 +31,6 @@ const BrandSection = ({ brandId, state, t }: { brandId: BrandId, state: AppState
 
   countries.forEach(c => {
     // Check if this country has data for this brand
-    // @ts-ignore
     const countryData = state.data[c.id];
     // @ts-ignore
     const brandData = countryData ? countryData[brandId] as BrandMarketData : null;
