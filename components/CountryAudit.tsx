@@ -51,7 +51,8 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
   };
 
   // Helper to update a specific brand's metrics
-  const handleMetricChange = (brandId: BrandId, platform: keyof typeof data.resound.metrics, type: 'organic' | 'paid', field: string, value: string) => {
+  // FIXED: Changed type from `keyof typeof data.resound.metrics` to `keyof BrandMarketData['metrics']` to avoid undefined error
+  const handleMetricChange = (brandId: BrandId, platform: keyof BrandMarketData['metrics'], type: 'organic' | 'paid', field: string, value: string) => {
     const brandData = data[brandId];
     if (!brandData) return;
 

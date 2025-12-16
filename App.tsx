@@ -100,13 +100,21 @@ function App() {
   };
 
   // Recommendations Logic
-  const [newRec, setNewRec] = useState({ 
+  // Explicitly type the state to allow all priority values
+  const [newRec, setNewRec] = useState<{
+    area: string;
+    problem: string;
+    action: string;
+    priority: 'high' | 'medium' | 'low';
+    brandId: BrandId;
+    countryId: CountryId | 'general';
+  }>({ 
     area: '', 
     problem: '', 
     action: '', 
-    priority: 'medium' as const, 
-    brandId: 'resound' as BrandId,
-    countryId: 'general' as CountryId | 'general'
+    priority: 'medium', 
+    brandId: 'resound',
+    countryId: 'general'
   });
 
   const addRecommendation = () => {
