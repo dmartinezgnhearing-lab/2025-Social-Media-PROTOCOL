@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { SpeedInsights } from '@vercel/speed-insights/react';
 import { AppState, Language, CountryId, BrandId, BrandMarketData } from './types';
 import { INITIAL_STATE, TRANSLATIONS, BRANDS } from './constants';
 import Dashboard from './components/Dashboard';
@@ -400,6 +401,7 @@ function App() {
         )}
 
       </main>
+      <SpeedInsights />
     </div>
   );
 }
