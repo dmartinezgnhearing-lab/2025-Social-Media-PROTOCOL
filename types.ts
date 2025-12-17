@@ -5,7 +5,11 @@ export type CountryId = 'es' | 'br' | 'it';
 export interface OrganicMetrics {
   followers: number;
   engagementRate: number;
-  frequency: number; // posts per week
+  // Content Mix / Frequency breakdown
+  posts: number;   // Static images, carousels
+  reels: number;   // Vertical short form
+  videos: number;  // Landscape / Long form
+  stories: number; // Ephemeral content
   reach: number;
   videoViews: number; // Added: Critical for current social media landscape
 }

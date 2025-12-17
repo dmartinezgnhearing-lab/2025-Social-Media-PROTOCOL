@@ -41,17 +41,11 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
       if (value >= 0.5 && value < 1.5) return 'border-yellow-300 bg-yellow-50 text-yellow-900';
       if (value >= 1.5) return 'border-green-300 bg-green-50 text-green-900';
     }
-    if (type === 'frequency') {
-      if (value < 1) return 'border-red-300 bg-red-50 text-red-900'; // Too low
-      if (value >= 1 && value <= 4) return 'border-green-300 bg-green-50 text-green-900'; // Sweet spot
-      if (value > 4) return 'border-yellow-300 bg-yellow-50 text-yellow-900'; // Spammy?
-    }
     // Default styling
     return 'border-gray-200 bg-transparent focus:border-blue-500';
   };
 
   // Helper to update a specific brand's metrics
-  // FIXED: Changed type from `keyof typeof data.resound.metrics` to `keyof BrandMarketData['metrics']` to avoid undefined error
   const handleMetricChange = (brandId: BrandId, platform: keyof BrandMarketData['metrics'], type: 'organic' | 'paid', field: string, value: string) => {
     const brandData = data[brandId];
     if (!brandData) return;
@@ -171,7 +165,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                </div>
 
                <div className="overflow-x-auto">
-                <table className="w-full min-w-[800px]">
+                <table className="w-full min-w-[900px]">
                   <thead>
                     <tr className="bg-gray-50/50 border-b border-gray-100">
                       <th className="text-left py-3 px-6 font-semibold text-gray-500 text-sm w-32">Platform</th>
@@ -180,7 +174,13 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                         <>
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.followers}</th>
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.engagement}</th>
-                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.frequency}</th>
+                          
+                          {/* Granular Content Mix */}
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_posts}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_reels}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_videos}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16 bg-yellow-50/50">{t.lbl_stories}</th>
+                          
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.reach}</th>
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-green-50/30">{t.videoViews}</th>
                         </>
@@ -220,11 +220,29 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                                 value={brandData.metrics[platform].organic.engagementRate || ''} placeholder="0.00"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'engagementRate', e.target.value)} />
                             </td>
+                            
+                            {/* NEW: Granular Inputs */}
                             <td className="p-2">
-                              <input type="number" className={`w-full text-right border-b focus:outline-none px-2 py-1 ${getInputColor('frequency', brandData.metrics[platform].organic.frequency)}`}
-                                value={brandData.metrics[platform].organic.frequency || ''} placeholder="0"
-                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'frequency', e.target.value)} />
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
+                                value={brandData.metrics[platform].organic.posts || ''} placeholder="-"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'posts', e.target.value)} />
                             </td>
+                            <td className="p-2">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
+                                value={brandData.metrics[platform].organic.reels || ''} placeholder="-"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'reels', e.target.value)} />
+                            </td>
+                            <td className="p-2">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
+                                value={brandData.metrics[platform].organic.videos || ''} placeholder="-"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'videos', e.target.value)} />
+                            </td>
+                            <td className="p-2 bg-yellow-50/30">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
+                                value={brandData.metrics[platform].organic.stories || ''} placeholder="-"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'stories', e.target.value)} />
+                            </td>
+
                             <td className="p-2">
                               <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500"
                                 value={brandData.metrics[platform].organic.reach || ''} placeholder="0"

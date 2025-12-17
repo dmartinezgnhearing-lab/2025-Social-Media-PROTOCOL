@@ -7,9 +7,19 @@ import { Save, Trash2, Download, LayoutDashboard, Globe, Lightbulb, Upload } fro
 
 function App() {
   const [state, setState] = useState<AppState>(() => {
-    // Basic migration check: if old data structure exists (detect by checking if es is CountryData directly or map)
-    const saved = localStorage.getItem('audit-protocol-v2-2'); // Increment version to avoid stale data conflicts
-    return saved ? JSON.parse(saved) : INITIAL_STATE;
+    try {
+      const saved = localStorage.getItem('audit-protocol-v2-2');
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        // Safety check: Ensure essential structure exists before using it
+        if (parsed && parsed.language && parsed.data && parsed.recommendations) {
+          return parsed;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to parse saved state, resetting to initial.', error);
+    }
+    return INITIAL_STATE;
   });
 
   const [activeTab, setActiveTab] = useState<'dashboard' | 'es' | 'br' | 'it' | 'recommendations'>('dashboard');
@@ -19,7 +29,8 @@ function App() {
     localStorage.setItem('audit-protocol-v2-2', JSON.stringify(state));
   }, [state]);
 
-  const t = TRANSLATIONS[state.language];
+  // Fail-safe for translations
+  const t = TRANSLATIONS[state.language] || TRANSLATIONS['es'];
 
   const handleUpdateBrandData = (countryId: CountryId, brandId: BrandId, data: BrandMarketData) => {
     setState(prev => ({
