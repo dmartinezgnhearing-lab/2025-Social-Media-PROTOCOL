@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { CountryData, Language, BrandId, BrandMarketData } from '../types';
 import { TRANSLATIONS, BRANDS } from '../constants';
-import { Copy, Users, Euro } from 'lucide-react';
+import { Copy, Users, Euro, Calendar } from 'lucide-react';
 
 interface CountryAuditProps {
   countryId: string;
@@ -120,12 +120,30 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                 )}
               </div>
 
-              <div className="p-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="p-6 grid grid-cols-1 md:grid-cols-4 gap-6">
+                <div>
+                  <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">{t.analysisPeriod}</label>
+                  <div className="relative">
+                    <Calendar size={14} className="absolute left-2.5 top-3 text-gray-400" />
+                    <select 
+                      className="w-full pl-8 pr-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors text-sm"
+                      value={brandData.analysisPeriod || '90_days'}
+                      onChange={(e) => handleGeneralChange(brandId, 'analysisPeriod', e.target.value)}
+                    >
+                      <option value="7_days">{t.p_7}</option>
+                      <option value="28_days">{t.p_28}</option>
+                      <option value="30_days">{t.p_30}</option>
+                      <option value="90_days">{t.p_90}</option>
+                      <option value="ytd">{t.p_ytd}</option>
+                    </select>
+                  </div>
+                </div>
+
                 <div>
                   <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">{t.manager}</label>
                   <input 
                     type="text" 
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors text-sm"
                     value={brandData.manager}
                     onChange={(e) => handleGeneralChange(brandId, 'manager', e.target.value)}
                   />
@@ -133,7 +151,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                 <div>
                   <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">{t.hasCalendar}</label>
                   <select 
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors text-sm"
                     value={brandData.hasCalendar}
                     onChange={(e) => handleGeneralChange(brandId, 'hasCalendar', e.target.value)}
                   >
@@ -146,7 +164,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                   <label className="block text-xs font-semibold uppercase text-gray-400 mb-1">{t.strategy}</label>
                   <input 
                     type="text" 
-                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors"
+                    className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:bg-white transition-colors text-sm"
                     value={brandData.strategy}
                     onChange={(e) => handleGeneralChange(brandId, 'strategy', e.target.value)}
                     placeholder="..."
@@ -165,23 +183,34 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                </div>
 
                <div className="overflow-x-auto">
-                <table className="w-full min-w-[900px]">
+                <table className="w-full min-w-[1200px]">
                   <thead>
                     <tr className="bg-gray-50/50 border-b border-gray-100">
-                      <th className="text-left py-3 px-6 font-semibold text-gray-500 text-sm w-32">Platform</th>
+                      <th className="text-left py-3 px-6 font-semibold text-gray-500 text-sm w-32 sticky left-0 bg-gray-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">Platform</th>
                       
                       {viewMode === 'organic' ? (
                         <>
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.followers}</th>
+                          
+                          {/* Awareness - Labels updated in constants to include "Espectadores" and "Vistas" */}
+                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-gray-50/80">{t.reach}</th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-gray-50/80">{t.impressions}</th>
+                          
+                          {/* Engagement */}
+                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.interactions}</th>
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.engagement}</th>
                           
-                          {/* Granular Content Mix */}
-                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_posts}</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_reels}</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16">{t.lbl_videos}</th>
-                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-16 bg-yellow-50/50">{t.lbl_stories}</th>
+                          {/* Conversion */}
+                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-blue-50/30">{t.profileVisits}</th>
+                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-blue-50/30">{t.clicks}</th>
                           
-                          <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm">{t.reach}</th>
+                          {/* Granular Content Mix */}
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-14 bg-yellow-50/10">{t.lbl_posts}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-14 bg-yellow-50/10">{t.lbl_reels}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-14 bg-yellow-50/10">{t.lbl_videos}</th>
+                          <th className="text-right py-3 px-2 font-semibold text-gray-500 text-xs w-14 bg-yellow-50/30">{t.lbl_stories}</th>
+                          
+                          {/* Video */}
                           <th className="text-right py-3 px-4 font-semibold text-gray-500 text-sm bg-green-50/30">{t.videoViews}</th>
                         </>
                       ) : (
@@ -198,7 +227,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                   <tbody className="divide-y divide-gray-100">
                     {platforms.map(platform => (
                       <tr key={platform} className="hover:bg-gray-50 transition-colors group">
-                        <td className="py-3 px-6 capitalize font-medium text-gray-700 flex items-center gap-2">
+                        <td className="py-3 px-6 capitalize font-medium text-gray-700 flex items-center gap-2 sticky left-0 bg-white group-hover:bg-gray-50 shadow-[2px_0_5px_-2px_rgba(0,0,0,0.1)]">
                            {/* Icon Placeholder */}
                            <div className={`w-2 h-2 rounded-full ${
                              platform === 'instagram' ? 'bg-pink-500' :
@@ -215,24 +244,55 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                                 value={brandData.metrics[platform].organic.followers || ''} placeholder="0"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'followers', e.target.value)} />
                             </td>
+                            
+                             {/* Awareness Inputs */}
+                            <td className="p-2 bg-gray-50/50">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500 font-medium text-gray-600"
+                                value={brandData.metrics[platform].organic.reach || ''} placeholder="0"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'reach', e.target.value)} />
+                            </td>
+                             <td className="p-2 bg-gray-50/50">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500 font-medium text-gray-800"
+                                value={brandData.metrics[platform].organic.impressions || ''} placeholder="0"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'impressions', e.target.value)} />
+                            </td>
+
+                            {/* Engagement Inputs */}
+                            <td className="p-2">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500"
+                                value={brandData.metrics[platform].organic.interactions || ''} placeholder="0"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'interactions', e.target.value)} />
+                            </td>
                             <td className="p-2">
                               <input type="number" step="0.01" className={`w-full text-right border-b focus:outline-none px-2 py-1 ${getInputColor('engagementRate', brandData.metrics[platform].organic.engagementRate)}`}
-                                value={brandData.metrics[platform].organic.engagementRate || ''} placeholder="0.00"
+                                value={brandData.metrics[platform].organic.engagementRate || ''} placeholder="%"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'engagementRate', e.target.value)} />
                             </td>
                             
-                            {/* NEW: Granular Inputs */}
-                            <td className="p-2">
+                             {/* Conversion Inputs */}
+                            <td className="p-2 bg-blue-50/10">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-sm"
+                                value={brandData.metrics[platform].organic.profileVisits || ''} placeholder="0"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'profileVisits', e.target.value)} />
+                            </td>
+                             <td className="p-2 bg-blue-50/10">
+                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-sm"
+                                value={brandData.metrics[platform].organic.clicks || ''} placeholder="0"
+                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'clicks', e.target.value)} />
+                            </td>
+
+                            {/* Granular Content Mix Inputs */}
+                            <td className="p-2 bg-yellow-50/10">
                               <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
                                 value={brandData.metrics[platform].organic.posts || ''} placeholder="-"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'posts', e.target.value)} />
                             </td>
-                            <td className="p-2">
+                            <td className="p-2 bg-yellow-50/10">
                               <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
                                 value={brandData.metrics[platform].organic.reels || ''} placeholder="-"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'reels', e.target.value)} />
                             </td>
-                            <td className="p-2">
+                            <td className="p-2 bg-yellow-50/10">
                               <input type="number" className="w-full text-right border-b focus:outline-none px-1 py-1 bg-transparent border-gray-200 focus:border-blue-500 text-xs"
                                 value={brandData.metrics[platform].organic.videos || ''} placeholder="-"
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'videos', e.target.value)} />
@@ -243,11 +303,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                                 onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'stories', e.target.value)} />
                             </td>
 
-                            <td className="p-2">
-                              <input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 bg-transparent border-gray-200 focus:border-blue-500"
-                                value={brandData.metrics[platform].organic.reach || ''} placeholder="0"
-                                onChange={(e) => handleMetricChange(brandId, platform, 'organic', 'reach', e.target.value)} />
-                            </td>
+                            {/* Video View Input */}
                             <td className="p-2 bg-green-50/10">
                               <input type="number" className="w-full text-right bg-transparent border-b border-transparent focus:border-green-500 focus:outline-none px-2 py-1 font-medium text-green-700"
                                 value={brandData.metrics[platform].organic.videoViews || ''} placeholder="0"
