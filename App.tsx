@@ -5,16 +5,29 @@ import Dashboard from './components/Dashboard';
 import CountryAudit from './components/CountryAudit';
 import { Save, Trash2, Download, LayoutDashboard, Globe, Lightbulb, Upload } from 'lucide-react';
 
+// Helper to deep merge objects to ensure new keys from updates exist even in old saved data
+function deepMerge(target: any, source: any) {
+  const output = { ...target };
+  if (source && typeof source === 'object') {
+    Object.keys(source).forEach(key => {
+      if (source[key] && typeof source[key] === 'object' && !Array.isArray(source[key])) {
+        output[key] = deepMerge(target[key] || {}, source[key]);
+      } else {
+        output[key] = source[key];
+      }
+    });
+  }
+  return output;
+}
+
 function App() {
   const [state, setState] = useState<AppState>(() => {
     try {
-      const saved = localStorage.getItem('audit-protocol-v2-2');
+      const saved = localStorage.getItem('audit-protocol-v2-3');
       if (saved) {
         const parsed = JSON.parse(saved);
-        // Safety check: Ensure essential structure exists before using it
-        if (parsed && parsed.language && parsed.data && parsed.recommendations) {
-          return parsed;
-        }
+        // We merge with INITIAL_STATE to ensure all new structure properties exist
+        return deepMerge(INITIAL_STATE, parsed);
       }
     } catch (error) {
       console.warn('Failed to parse saved state, resetting to initial.', error);
@@ -26,10 +39,9 @@ function App() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    localStorage.setItem('audit-protocol-v2-2', JSON.stringify(state));
+    localStorage.setItem('audit-protocol-v2-3', JSON.stringify(state));
   }, [state]);
 
-  // Fail-safe for translations
   const t = TRANSLATIONS[state.language] || TRANSLATIONS['es'];
 
   const handleUpdateBrandData = (countryId: CountryId, brandId: BrandId, data: BrandMarketData) => {
@@ -64,7 +76,7 @@ function App() {
   const clearData = () => {
     if (confirm('Are you sure you want to clear all data?')) {
       setState(INITIAL_STATE);
-      // Force reload to clear state properly if needed, but setState is enough usually
+      localStorage.removeItem('audit-protocol-v2-3');
       window.location.reload();
     }
   };
@@ -92,10 +104,8 @@ function App() {
       try {
         const content = e.target?.result as string;
         const parsedData = JSON.parse(content);
-        
-        // Simple validation check (check for key structure)
         if (parsedData.data && parsedData.generalInfo) {
-           setState(parsedData);
+           setState(deepMerge(INITIAL_STATE, parsedData));
            alert(t.importSuccess);
         } else {
            alert(t.importError);
@@ -106,12 +116,9 @@ function App() {
       }
     };
     reader.readAsText(file);
-    // Reset input so same file can be selected again
     event.target.value = '';
   };
 
-  // Recommendations Logic
-  // Explicitly type the state to allow all priority values
   const [newRec, setNewRec] = useState<{
     area: string;
     problem: string;
@@ -147,8 +154,6 @@ function App() {
 
   return (
     <div className="flex min-h-screen bg-gray-50 font-sans text-gray-900">
-      
-      {/* Sidebar */}
       <aside className="w-64 bg-white border-r border-gray-200 fixed h-full z-10 hidden md:block overflow-y-auto">
         <div className={`p-6 border-b border-gray-100 bg-gradient-to-br from-gray-900 to-gray-800 text-white`}>
           <h1 className="text-xl font-bold leading-tight">{t.appTitle}</h1>
@@ -200,10 +205,7 @@ function App() {
         </nav>
       </aside>
 
-      {/* Main Content */}
       <main className="flex-1 md:ml-64 p-4 md:p-8">
-        
-        {/* Header Controls */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-8">
           <div>
             <h2 className="text-2xl font-bold text-gray-800">
@@ -219,7 +221,6 @@ function App() {
           </div>
 
           <div className="flex gap-3 flex-wrap">
-             {/* Selectors */}
             <select 
               value={state.language}
               onChange={(e) => setState(s => ({ ...s, language: e.target.value as Language }))}
@@ -233,7 +234,6 @@ function App() {
 
             <div className="h-8 w-px bg-gray-300 mx-2 hidden md:block"></div>
             
-            {/* Import / Export Controls */}
             <input 
               type="file" 
               ref={fileInputRef} 
@@ -255,118 +255,49 @@ function App() {
           </div>
         </div>
 
-        {/* Content Render */}
-        {activeTab === 'dashboard' && (
-          <Dashboard state={state} t={t} />
-        )}
-
-        {activeTab === 'es' && (
-          <CountryAudit 
-            countryId="es" 
-            data={state.data.es} 
-            language={state.language} 
-            onUpdate={(brandId, d) => handleUpdateBrandData('es', brandId, d)}
-          />
-        )}
-
-        {activeTab === 'br' && (
-          <CountryAudit 
-            countryId="br" 
-            data={state.data.br} 
-            language={state.language} 
-            onUpdate={(brandId, d) => handleUpdateBrandData('br', brandId, d)}
-            onCopyFromEs={() => copyEsTo('br')}
-          />
-        )}
-
-        {activeTab === 'it' && (
-          <CountryAudit 
-            countryId="it" 
-            data={state.data.it} 
-            language={state.language} 
-            onUpdate={(brandId, d) => handleUpdateBrandData('it', brandId, d)}
-            onCopyFromEs={() => copyEsTo('it')}
-          />
-        )}
-
+        {activeTab === 'dashboard' && <Dashboard state={state} t={t} />}
+        {activeTab === 'es' && <CountryAudit countryId="es" data={state.data.es} language={state.language} onUpdate={(brandId, d) => handleUpdateBrandData('es', brandId, d)} />}
+        {activeTab === 'br' && <CountryAudit countryId="br" data={state.data.br} language={state.language} onUpdate={(brandId, d) => handleUpdateBrandData('br', brandId, d)} onCopyFromEs={() => copyEsTo('br')} />}
+        {activeTab === 'it' && <CountryAudit countryId="it" data={state.data.it} language={state.language} onUpdate={(brandId, d) => handleUpdateBrandData('it', brandId, d)} onCopyFromEs={() => copyEsTo('it')} />}
         {activeTab === 'recommendations' && (
           <div className="space-y-6 animate-in fade-in duration-500">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
               <h3 className="text-xl font-bold text-gray-800 mb-4">{t.addRec}</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* Brand Selector */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold uppercase text-gray-500">{t.brand}</label>
-                  <select
-                    className="px-3 py-2 border rounded-lg"
-                    value={newRec.brandId}
-                    onChange={e => setNewRec({...newRec, brandId: e.target.value as BrandId})}
-                  >
+                  <select className="px-3 py-2 border rounded-lg" value={newRec.brandId} onChange={e => setNewRec({...newRec, brandId: e.target.value as BrandId})}>
                     <option value="resound">ReSound</option>
                     <option value="beltone">Beltone</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
-
-                {/* Country Selector - NEW */}
                 <div className="flex flex-col gap-1">
                   <label className="text-xs font-semibold uppercase text-gray-500">{t.country}</label>
-                  <select
-                    className="px-3 py-2 border rounded-lg"
-                    value={newRec.countryId}
-                    onChange={e => setNewRec({...newRec, countryId: e.target.value as CountryId | 'general'})}
-                  >
+                  <select className="px-3 py-2 border rounded-lg" value={newRec.countryId} onChange={e => setNewRec({...newRec, countryId: e.target.value as CountryId | 'general'})}>
                     <option value="general">{t.global}</option>
                     <option value="es">{t.spain}</option>
                     <option value="br">{t.brazil}</option>
                     <option value="it">{t.italy}</option>
                   </select>
                 </div>
-
                 <div className="md:col-span-2">
-                  <input 
-                    placeholder={t.area}
-                    className="w-full px-3 py-2 border rounded-lg"
-                    value={newRec.area}
-                    onChange={e => setNewRec({...newRec, area: e.target.value})}
-                  />
+                  <input placeholder={t.area} className="w-full px-3 py-2 border rounded-lg" value={newRec.area} onChange={e => setNewRec({...newRec, area: e.target.value})} />
                 </div>
-                
-                 <input 
-                  placeholder={t.problem}
-                  className="px-3 py-2 border rounded-lg"
-                  value={newRec.problem}
-                  onChange={e => setNewRec({...newRec, problem: e.target.value})}
-                />
-                 <input 
-                  placeholder={t.action}
-                  className="px-3 py-2 border rounded-lg"
-                  value={newRec.action}
-                  onChange={e => setNewRec({...newRec, action: e.target.value})}
-                />
-                
+                <input placeholder={t.problem} className="px-3 py-2 border rounded-lg" value={newRec.problem} onChange={e => setNewRec({...newRec, problem: e.target.value})} />
+                <input placeholder={t.action} className="px-3 py-2 border rounded-lg" value={newRec.action} onChange={e => setNewRec({...newRec, action: e.target.value})} />
                 <div className="md:col-span-2">
-                  <select
-                    className="w-full px-3 py-2 border rounded-lg"
-                    value={newRec.priority}
-                    onChange={e => setNewRec({...newRec, priority: e.target.value as 'high' | 'medium' | 'low'})}
-                  >
+                  <select className="w-full px-3 py-2 border rounded-lg" value={newRec.priority} onChange={e => setNewRec({...newRec, priority: e.target.value as 'high' | 'medium' | 'low'})}>
                     <option value="high">{t.high}</option>
                     <option value="medium">{t.medium}</option>
                     <option value="low">{t.low}</option>
                   </select>
                 </div>
-
-                <button 
-                  onClick={addRecommendation}
-                  className={`px-4 py-2 rounded-lg text-white font-medium bg-gray-900 hover:opacity-90 transition-opacity md:col-span-2 mt-2`}
-                >
+                <button onClick={addRecommendation} className={`px-4 py-2 rounded-lg text-white font-medium bg-gray-900 hover:opacity-90 transition-opacity md:col-span-2 mt-2`}>
                   {t.addRec}
                 </button>
               </div>
             </div>
-
             <div className="space-y-4">
               {state.recommendations.map(rec => (
                 <div key={rec.id} className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 flex justify-between items-start">
@@ -375,15 +306,10 @@ function App() {
                       <span className={`text-xs px-2 py-1 rounded font-bold uppercase text-white ${rec.brandId === 'resound' ? 'bg-red-700' : rec.brandId === 'beltone' ? 'bg-blue-600' : 'bg-gray-600'}`}>
                         {rec.brandId}
                       </span>
-                      {/* Country Badge */}
                       <span className="text-xs px-2 py-1 rounded font-bold uppercase bg-gray-100 text-gray-600 border border-gray-200">
                         {rec.countryId === 'general' ? 'GLOBAL' : rec.countryId.toUpperCase()}
                       </span>
-                      <span className={`text-xs px-2 py-1 rounded font-bold uppercase ${
-                        rec.priority === 'high' ? 'bg-red-100 text-red-700' : 
-                        rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 
-                        'bg-green-100 text-green-700'
-                      }`}>
+                      <span className={`text-xs px-2 py-1 rounded font-bold uppercase ${rec.priority === 'high' ? 'bg-red-100 text-red-700' : rec.priority === 'medium' ? 'bg-yellow-100 text-yellow-700' : 'bg-green-100 text-green-700'}`}>
                         {t[rec.priority]}
                       </span>
                     </div>
@@ -414,7 +340,6 @@ function App() {
             </div>
           </div>
         )}
-
       </main>
     </div>
   );

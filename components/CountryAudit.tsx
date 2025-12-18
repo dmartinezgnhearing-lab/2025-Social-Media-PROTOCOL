@@ -18,7 +18,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
   onUpdate, 
   onCopyFromEs
 }) => {
-  const t = TRANSLATIONS[language];
+  const t = TRANSLATIONS[language] || TRANSLATIONS['es'];
   const [viewMode, setViewMode] = useState<'organic' | 'paid' | 'audit'>('audit');
 
   const platforms = ['instagram', 'facebook', 'linkedin', 'youtube'] as const;
@@ -74,7 +74,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
         [platform]: {
           ...brandData.metrics[platform],
           [section]: {
-            ...brandData.metrics[platform][section],
+            ...(brandData.metrics[platform][section] || {}),
             [field]: value
           }
         }
@@ -164,6 +164,8 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {platforms.map(platform => {
                   const pData = brandData.metrics[platform];
+                  if (!pData) return null;
+                  
                   return (
                     <div key={platform} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 space-y-4">
                       <div className="flex items-center justify-between">
@@ -173,18 +175,18 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                          </h3>
                          <div className="flex items-center gap-2">
                            <span className="text-xs font-bold text-gray-400 uppercase">{t.isActive}</span>
-                           <input type="checkbox" checked={pData.isActive} onChange={e => handlePlatformMetaChange(brandId, platform, 'isActive', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
+                           <input type="checkbox" checked={pData.isActive ?? true} onChange={e => handlePlatformMetaChange(brandId, platform, 'isActive', e.target.checked)} className="h-4 w-4 text-indigo-600 rounded" />
                          </div>
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
                          <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase">{t.username}</label>
-                            <input type="text" className="w-full p-1.5 border-b text-sm focus:outline-none bg-transparent" value={pData.username} onChange={e => handlePlatformMetaChange(brandId, platform, 'username', e.target.value)} placeholder="@username" />
+                            <input type="text" className="w-full p-1.5 border-b text-sm focus:outline-none bg-transparent" value={pData.username || ''} onChange={e => handlePlatformMetaChange(brandId, platform, 'username', e.target.value)} placeholder="@username" />
                          </div>
                          <div>
                             <label className="block text-[10px] font-bold text-gray-400 uppercase">{t.target}</label>
-                            <select className="w-full p-1.5 border-b text-sm focus:outline-none bg-transparent" value={pData.target} onChange={e => handlePlatformMetaChange(brandId, platform, 'target', e.target.value)}>
+                            <select className="w-full p-1.5 border-b text-sm focus:outline-none bg-transparent" value={pData.target || 'B2C'} onChange={e => handlePlatformMetaChange(brandId, platform, 'target', e.target.value)}>
                                <option value="B2B">B2B</option>
                                <option value="B2C">B2C</option>
                                <option value="B2B2C">B2B2C</option>
@@ -199,7 +201,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                               {['colors', 'typography', 'tone'].map(f => (
                                 <div key={f} className="flex-1">
                                    <span className="block text-gray-500 mb-1">{t[`lbl_${f.slice(0,4)}`]}</span>
-                                   <select className="w-full border rounded p-1" value={(pData.alignment as any)[f]} onChange={e => handleAuditChange(brandId, platform, 'alignment', f, e.target.value)}>
+                                   <select className="w-full border rounded p-1" value={(pData.alignment?.[f as keyof typeof pData.alignment]) || 'partial'} onChange={e => handleAuditChange(brandId, platform, 'alignment', f, e.target.value)}>
                                       <option value="yes">{t.yes}</option>
                                       <option value="partial">{t.partial}</option>
                                       <option value="no">{t.no}</option>
@@ -210,10 +212,10 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                         </div>
 
                         <div className="grid grid-cols-2 gap-x-4 gap-y-2 py-2 border-t border-b bg-gray-50/50 p-3 rounded-lg">
-                           {Object.keys(pData.checklist).map(k => (
+                           {Object.keys(pData.checklist || {}).map(k => (
                              <label key={k} className="flex items-center gap-2 text-[11px] font-medium cursor-pointer">
-                               <input type="checkbox" checked={(pData.checklist as any)[k]} onChange={e => handleAuditChange(brandId, platform, 'checklist', k, e.target.checked)} className="rounded" />
-                               {t[`chk_${k}`]}
+                               <input type="checkbox" checked={(pData.checklist?.[k as keyof typeof pData.checklist]) || false} onChange={e => handleAuditChange(brandId, platform, 'checklist', k, e.target.checked)} className="rounded" />
+                               {t[`chk_${k}`] || k}
                              </label>
                            ))}
                         </div>
@@ -221,11 +223,11 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                         <div className="grid grid-cols-2 gap-4">
                            <div>
                              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{t.currentContent}</label>
-                             <textarea className="w-full p-2 border rounded text-xs h-16" value={pData.currentContentStyle} onChange={e => handlePlatformMetaChange(brandId, platform, 'currentContentStyle', e.target.value)} />
+                             <textarea className="w-full p-2 border rounded text-xs h-16" value={pData.currentContentStyle || ''} onChange={e => handlePlatformMetaChange(brandId, platform, 'currentContentStyle', e.target.value)} />
                            </div>
                            <div>
                              <label className="block text-[10px] font-bold text-gray-400 uppercase mb-1">{t.desiredContent}</label>
-                             <textarea className="w-full p-2 border rounded text-xs h-16" value={pData.desiredContentStyle} onChange={e => handlePlatformMetaChange(brandId, platform, 'desiredContentStyle', e.target.value)} />
+                             <textarea className="w-full p-2 border rounded text-xs h-16" value={pData.desiredContentStyle || ''} onChange={e => handlePlatformMetaChange(brandId, platform, 'desiredContentStyle', e.target.value)} />
                            </div>
                         </div>
                       </div>
@@ -271,6 +273,8 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                     <tbody className="divide-y divide-gray-100">
                       {platforms.map(platform => {
                         const pData = brandData.metrics[platform];
+                        if (!pData) return null;
+
                         return (
                           <tr key={platform} className="hover:bg-gray-50 transition-colors group">
                             <td className="py-3 px-6 capitalize font-medium text-gray-700 flex items-center gap-2 sticky left-0 bg-white z-10 group-hover:bg-gray-50">
@@ -294,7 +298,7 @@ const CountryAudit: React.FC<CountryAuditProps> = ({
                               </>
                             ) : (
                               <>
-                                <td className="px-4 py-2"><input type="checkbox" checked={pData.paid.advertisingEnabled} onChange={e => handleMetricChange(brandId, platform, 'paid', 'advertisingEnabled', e.target.checked)} className="h-4 w-4" /></td>
+                                <td className="px-4 py-2"><input type="checkbox" checked={pData.paid.advertisingEnabled || false} onChange={e => handleMetricChange(brandId, platform, 'paid', 'advertisingEnabled', e.target.checked)} className="h-4 w-4" /></td>
                                 <td className="p-2"><input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1" value={pData.paid.budget || ''} onChange={e => handleMetricChange(brandId, platform, 'paid', 'budget', e.target.value)} /></td>
                                 <td className="p-2 bg-indigo-50/20"><input type="number" className="w-full text-right border-b focus:outline-none px-2 py-1 font-semibold" value={pData.paid.avgMonthlyBudget || ''} onChange={e => handleMetricChange(brandId, platform, 'paid', 'avgMonthlyBudget', e.target.value)} /></td>
                                 <td className="p-2"><input type="number" step="0.01" className="w-full text-right border-b focus:outline-none px-2 py-1" value={pData.paid.cpc || ''} onChange={e => handleMetricChange(brandId, platform, 'paid', 'cpc', e.target.value)} /></td>
